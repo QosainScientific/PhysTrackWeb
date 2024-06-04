@@ -1,6 +1,7 @@
 window.camVideoElementId = [];
 window.startCamera = (videoElementId) => {
     window.camVideoElementId = videoElementId;
+    console.log("vid ID ", window.camVideoElementId);
     const video = document.getElementById(videoElementId);
 
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -13,7 +14,8 @@ window.startCamera = (videoElementId) => {
         });
 };
 window.captureFrame = () => {
-    var videoElementId = window.videoElementId;
+    console.log("vid ID ", window.camVideoElementId);
+    var videoElementId = window.camVideoElementId;
     const video = document.getElementById(videoElementId);
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
