@@ -1,7 +1,7 @@
-window.camVideoElementId = [];
-window.startCamera = (videoElementId) => {
-    window.camVideoElementId = videoElementId;
-    console.log("vid ID ", window.camVideoElementId);
+var camVideoElementId = [];
+export function startCamera (videoElementId) {
+    camVideoElementId = videoElementId;
+    console.log("vid ID ", camVideoElementId);
     const video = document.getElementById(videoElementId);
 
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -12,10 +12,11 @@ window.startCamera = (videoElementId) => {
         .catch(err => {
             console.error("Error accessing camera: " + err);
         });
+
 };
-window.captureFrame = () => {
-    console.log("vid ID ", window.camVideoElementId);
-    var videoElementId = window.camVideoElementId;
+export function captureOneFrame () {
+    console.log("vid ID ", camVideoElementId);
+    var videoElementId = camVideoElementId;
     const video = document.getElementById(videoElementId);
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
@@ -24,3 +25,29 @@ window.captureFrame = () => {
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     return canvas.toDataURL('image/png'); // Returns the image as a base64 encoded PNG
 };
+var allowAutoTrigger = false;
+export function triggerFrameLoop() {
+    async function triggerUnit() {
+        var base64 = captureOneFrame();
+        await sendFrame(base64);
+        if (allowAutoTrigger)
+            requestAnimationFrame(triggerFrameLoop);
+    }
+    allowAutoTrigger = true;
+    triggerUnit();
+}
+export function stopFrameLoop() {
+    allowAutoTrigger = false;
+}
+
+// Auto frame fire
+var camListener = null;
+export function registerFrameSink(objRef) {
+    camListener = objRef;
+}
+
+async function sendFrame(frame) {
+    if (camListener == null)
+        return;
+    await camListener.invokeMethodAsync("OnNewFrame", frame);
+}

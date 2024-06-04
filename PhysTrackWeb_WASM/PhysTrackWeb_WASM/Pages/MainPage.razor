@@ -27,11 +27,19 @@
 </MudGrid>
 @code{
 	SKGLView skView;
+	IJSObjectReference camModule;
 	string vidFrameID = "videoElement";
 	protected override async Task OnAfterRenderAsync(bool firstRender){
 		if (!firstRender)
 			return;
-		await JSRuntime.InvokeVoidAsync("window.startCamera", vidFrameID);
+		camModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/camera.js");
+		await camModule.InvokeVoidAsync("registerFrameSink", DotNetObjectReference.Create(this));
+		await camModule.InvokeVoidAsync("startCamera", vidFrameID);
+	}
+	[JSInvokable]
+	public void OnNewFrame(string base64)
+	{
+		
 	}
 	SKImage capturedFrame;
 	private async Task PaintSurface(SKPaintGLSurfaceEventArgs e){
@@ -43,7 +51,7 @@
 	}
 	async Task captureImage(){
 
-		var base64 = (await JSRuntime.InvokeAsync<string>("window.captureFrame")).Split(',')[1];
+		var base64 = (await camModule.InvokeAsync<string>("captureOneFrame")).Split(',')[1];
 		var bytes = Convert.FromBase64String(base64);
 		capturedFrame = SKImage.FromEncodedData(bytes);
 		skView.Invalidate();
