@@ -1,0 +1,16 @@
+﻿@page "/"
+@inject IJSRuntime JSRuntime
+
+<video id="videoElement" width="640" height="480" autoplay></video>
+<PageTitle>Camera Main</PageTitle>
+
+<h1>Hello, world!</h1>
+
+@code{
+	string vidFrameID = "videoElement";
+	protected override async Task OnAfterRenderAsync(bool firstRender){
+		if (!firstRender)
+			return;
+		await JSRuntime.InvokeVoidAsync("window.startCamera", vidFrameID);
+	}
+}
